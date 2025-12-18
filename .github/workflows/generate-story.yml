@@ -1,0 +1,42 @@
+name: Generate Sarajevo AQI Story
+
+on:
+  # Schedule for 9am and 2pm Sarajevo time (CET/UTC+1)
+  # Note: Times are in UTC, so 8:00 and 13:00 UTC = 9am and 2pm CET
+  # During CEST (summer time UTC+2), this will run at 10am and 3pm local time
+  schedule:
+    - cron: '0 8 * * *'   # 9am CET (8am UTC)
+    - cron: '0 13 * * *'  # 2pm CET (1pm UTC)
+  
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  generate-story:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      
+      - name: Install dependencies
+        run: uv pip install --system -e .
+      
+      - name: Generate story image
+        run: python generate_story_img.py
+      
+      - name: Upload story artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: story-image-${{ github.run_number }}
+          path: stories/*.png
+          retention-days: 7
+
