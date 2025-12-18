@@ -72,53 +72,48 @@ def generate_story_image(aqi: int) -> str:
     base_image, text_color = get_base_image_name_and_color_from_aqi(aqi)
     label = get_label_from_aqi(aqi)
 
-    # Load the background image
     background_path = f"static/imgs/{base_image}.png"
     img = Image.open(background_path)
 
-    # Create a drawing context
     draw = ImageDraw.Draw(img)
 
-    # Get current hour and date
     now = datetime.now()
     formatted_date = now.strftime("%B %d at %H:00")
 
-    # Try to use a nice font, fall back to default if not available
-    try:
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 65)
-        font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 110)
-    except:
-        font = ImageFont.load_default()
-        font_large = ImageFont.load_default()
+    normal_black = ImageFont.truetype("static/fonts/Noto_Sans/NotoSans-SemiBold.ttf", 110)
+    normal = ImageFont.truetype("static/fonts/Noto_Sans/NotoSans-SemiBold.ttf", 65)
+    large_black = ImageFont.truetype("static/fonts/Noto_Sans/NotoSans-Black.ttf", 110)
 
-    # Text to display
-    text_line0 = formatted_date
-    text_line1 = f"AQI: {aqi}"
-    text_line2 = label
-
-    # Calculate positions (center aligned, starting from top)
     img_width = img.width
-    y_offset = 200
+    y_offset = 100
 
-    # Draw each line centered
-    bbox0 = draw.textbbox((0, 0), text_line0, font=font)
+    text_line0 = "Sarajevo"
+    bbox0 = draw.textbbox((0, 0), text_line0, font=normal_black)
     text_width0 = bbox0[2] - bbox0[0]
     x0 = (img_width - text_width0) // 2
-    draw.text((x0, y_offset), text_line0, fill=text_color, font=font)
+    draw.text((x0, y_offset), text_line0, fill=text_color, font=normal_black)
 
-    y_offset += 80
-    bbox1 = draw.textbbox((0, 0), text_line1, font=font)
+    y_offset += 155
+    text_line1 = formatted_date
+    bbox1 = draw.textbbox((0, 0), text_line1, font=normal)
     text_width1 = bbox1[2] - bbox1[0]
     x1 = (img_width - text_width1) // 2
-    draw.text((x1, y_offset), text_line1, fill=text_color, font=font)
+    draw.text((x1, y_offset), text_line1, fill=text_color, font=normal)
 
-    y_offset += 120
-    bbox2 = draw.textbbox((0, 0), text_line2, font=font_large)
+    y_offset += 90
+    text_line2 = f"AQI: {aqi}"
+    bbox2 = draw.textbbox((0, 0), text_line2, font=normal)
     text_width2 = bbox2[2] - bbox2[0]
     x2 = (img_width - text_width2) // 2
-    draw.text((x2, y_offset), text_line2, fill=text_color, font=font_large)
+    draw.text((x2, y_offset), text_line2, fill=text_color, font=normal)
 
-    # Save the image
+    y_offset += 90
+    text_line3 = label
+    bbox3 = draw.textbbox((0, 0), text_line3, font=large_black)
+    text_width3 = bbox3[2] - bbox3[0]
+    x3 = (img_width - text_width3) // 2
+    draw.text((x3, y_offset), text_line3, fill=text_color, font=large_black)
+
     img.save(output_path)
     print(f"Story image generated: {output_path}")
 
