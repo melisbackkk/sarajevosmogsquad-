@@ -67,7 +67,7 @@ def generate_story_image(aqi: int) -> str:
 
     now = datetime.now()
     date_hour = now.strftime("%Y-%m-%d_%H")
-    output_path = f"stories/{date_hour}.png"
+    output_path = f"stories/{date_hour}.jpg"
 
     base_image, text_color = get_base_image_name_and_color_from_aqi(aqi)
     label = get_label_from_aqi(aqi)
@@ -114,7 +114,12 @@ def generate_story_image(aqi: int) -> str:
     x3 = (img_width - text_width3) // 2
     draw.text((x3, y_offset), text_line3, fill=text_color, font=large_black)
 
-    img.save(output_path)
+    if img.mode in ('RGBA', 'LA', 'P'):
+        rgb_img = Image.new('RGB', img.size, (255, 255, 255))
+        rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+        img = rgb_img
+    
+    img.save(output_path, 'JPEG', quality=85, optimize=True)
     print(f"Story image generated: {output_path}")
 
     return output_path
