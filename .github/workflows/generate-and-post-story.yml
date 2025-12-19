@@ -1,4 +1,4 @@
-name: Generate and Store Sarajevo AQI Story Images
+name: Generate, Store, and Post Sarajevo AQI Stories
 
 on:
   # Schedule for 9am and 2pm Sarajevo time (CET/UTC+1)
@@ -60,7 +60,21 @@ jobs:
           git commit -m "Add AQI story image: $(basename ${{ steps.check_new.outputs.generated_file }})"
           git push
       
+      - name: Wait for GitHub to process push
+        if: steps.check_new.outputs.is_new == 'true'
+        run: sleep 5
+      
+      - name: Post to Instagram Stories
+        if: steps.check_new.outputs.is_new == 'true'
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+        run: |
+          FILENAME=$(basename ${{ steps.check_new.outputs.generated_file }})
+          echo "Posting $FILENAME to Instagram..."
+          python post_story.py "$FILENAME"
+      
       - name: Skip - Image already exists
         if: steps.check_new.outputs.is_new == 'false'
-        run: echo "Skipping commit - image already exists in repository"
+        run: echo "Skipping - image already exists in repository"
 
