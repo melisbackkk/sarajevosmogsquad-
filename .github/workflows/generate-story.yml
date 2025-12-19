@@ -1,4 +1,4 @@
-name: Generate Sarajevo AQI Story
+name: Generate and Store Sarajevo AQI Story Images
 
 on:
   # Schedule for 9am and 2pm Sarajevo time (CET/UTC+1)
@@ -14,6 +14,8 @@ on:
 jobs:
   generate-story:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout repository
@@ -33,10 +35,32 @@ jobs:
       - name: Generate story image
         run: python generate_story_img.py
       
-      - name: Upload story artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: story-image-${{ github.run_number }}
-          path: stories/*.png
-          retention-days: 7
+      - name: Check if image is new
+        id: check_new
+        run: |
+          # Get the generated image filename
+          GENERATED_FILE=$(ls -t stories/*.png | head -n 1)
+          echo "generated_file=$GENERATED_FILE" >> $GITHUB_OUTPUT
+          
+          # Check if this file was already committed
+          if git ls-files --error-unmatch "$GENERATED_FILE" 2>/dev/null; then
+            echo "Image already exists in repository"
+            echo "is_new=false" >> $GITHUB_OUTPUT
+          else
+            echo "New image generated"
+            echo "is_new=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push new image
+        if: steps.check_new.outputs.is_new == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stories/*.png
+          git commit -m "Add AQI story image: $(basename ${{ steps.check_new.outputs.generated_file }})"
+          git push
+      
+      - name: Skip - Image already exists
+        if: steps.check_new.outputs.is_new == 'false'
+        run: echo "Skipping commit - image already exists in repository"
 
