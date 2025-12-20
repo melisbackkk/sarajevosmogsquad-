@@ -20,13 +20,27 @@ def get_base_image_name_and_color_from_aqi(aqi: int) -> str:
 
 def get_label_from_aqi(aqi: int) -> str:
     if aqi < 50:
-        return "Breathe easy"
+        return "Dišite slobodno"
     elif aqi < 100:
-        return "Mostly fine"
+        return "Uglavnom dobro"
     elif aqi < 200:
-        return "Unhealthy air"
+        return "Nezdrav zrak"
     else:
-        return "Stay inside!"
+        return "Ostanite unutra!"
+
+
+def format_date_bosnian(dt: datetime) -> str:
+    """Format date in Bosnian."""
+    days_bosnian = {
+        0: "Ponedjeljak", 1: "Utorak", 2: "Srijeda", 3: "Četvrtak",
+        4: "Petak", 5: "Subota", 6: "Nedjelja"
+    }
+    
+    day_name = days_bosnian[dt.weekday()]
+    date_str = dt.strftime("%d.%m.%Y")
+    time_str = dt.strftime("%H:00")
+    
+    return f"{day_name} {date_str} | {time_str}"
 
 
 def fetch_sarajevo_aqi() -> int:
@@ -80,7 +94,7 @@ def generate_story_image(aqi: int) -> str:
 
     draw = ImageDraw.Draw(img)
 
-    formatted_date = now.strftime("%B %d at %H:00")
+    formatted_date = format_date_bosnian(now)
 
     normal_black = ImageFont.truetype("static/fonts/Noto_Sans/NotoSans-SemiBold.ttf", 110)
     normal = ImageFont.truetype("static/fonts/Noto_Sans/NotoSans-SemiBold.ttf", 65)
@@ -103,7 +117,7 @@ def generate_story_image(aqi: int) -> str:
     draw.text((x1, y_offset), text_line1, fill=text_color, font=normal)
 
     y_offset += 90
-    text_line2 = f"AQI: {aqi}"
+    text_line2 = f"Kvalitet zraka: {aqi}"
     bbox2 = draw.textbbox((0, 0), text_line2, font=normal)
     text_width2 = bbox2[2] - bbox2[0]
     x2 = (img_width - text_width2) // 2
