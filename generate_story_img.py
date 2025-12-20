@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 
 
@@ -65,7 +66,9 @@ def fetch_sarajevo_aqi() -> int:
 def generate_story_image(aqi: int) -> str:
     os.makedirs("stories", exist_ok=True)
 
-    now = datetime.now()
+    # Use Sarajevo timezone for consistent time display
+    sarajevo_tz = ZoneInfo("Europe/Sarajevo")
+    now = datetime.now(sarajevo_tz)
     date_hour = now.strftime("%Y-%m-%d_%H")
     output_path = f"stories/{date_hour}.jpg"
 
@@ -77,7 +80,6 @@ def generate_story_image(aqi: int) -> str:
 
     draw = ImageDraw.Draw(img)
 
-    now = datetime.now()
     formatted_date = now.strftime("%B %d at %H:00")
 
     normal_black = ImageFont.truetype("static/fonts/Noto_Sans/NotoSans-SemiBold.ttf", 110)
